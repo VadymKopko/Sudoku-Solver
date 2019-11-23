@@ -17,7 +17,7 @@ public class Node {
     private int BoxID;  // Refers to an according box(3x3) position in a grid
     private int data;  // A set value
     private Node north, east, south, west;  // Links between Nodes
-    private boolean[] possible = new boolean[SIZE];  // An array of possible numbers for the Node
+    private boolean[] possible = new boolean[SIZE+1];  // An array of possible numbers for the Node
 
     // Class constructor
     public Node(int BoxID){
@@ -29,7 +29,7 @@ public class Node {
         this.west = null;
         // Initially all numbers are a possibility, excluding 0
         possible[0] = false;
-        for(int i = 1; i < SIZE; i++) {possible[i] = true;}
+        for(int i = 1; i <= SIZE; i++) {possible[i] = true;}
     }
 
     // Getters and Setters:
@@ -83,8 +83,8 @@ public class Node {
     }
 
     // Set a number to impossible
-    public void setImposible(int id){
-        this.possible[id] = false;
+    public void setImposible(int num){
+        this.possible[num] = false;
     }
 
     // Get possibilities
@@ -92,4 +92,47 @@ public class Node {
         return this.possible;
     }
 
+    // Display Node possibilities
+    public void displayPossible(){
+        boolean atLeastOne = false;
+        for(int i = 0; i <= SIZE; i++) {
+            if(possible[i]) {
+                System.out.print(i + " ");
+                atLeastOne = true;
+            }
+        }
+        if(!atLeastOne)
+            System.out.print("SOLVED");
+        System.out.print("\n");
+    }
+
+    // Runs through all Nodes possibilities,
+    // Returns boolean:
+    //      true - if it is solved with, aka only one possibility
+    //      false - if more than one possibility for solving or already solved
+    public boolean solveNode(){
+        // Check if not solved already
+        if(this.data == 0){
+
+            int numOfPoss = 0; // Number of possibilities for the node to be solved
+            int solved = 0; // Number that is a possible solution
+
+            // Checks for each possible number
+            for(int i = 1; i < possible.length; i++){
+                if(this.possible[i]){
+                    numOfPoss++;
+                    solved = i;
+                }
+            }
+
+            // If only one possibility found plugs in the number, aka this Node is solved
+            if(numOfPoss == 1){
+                this.data = solved;
+                return true;
+            }
+        }
+
+        // Returns
+        return false;
+    }
 }

@@ -32,6 +32,15 @@ public class Main {
         sudoku.populateFromFile(SUDOKU_PATH);
 
         // Display the board before solving
-        sudoku.display(true);
+        sudoku.display(false);
+
+        // Solve sudoku
+        sudoku.solve();
+
+        // Display the board after solving
+        sudoku.display(false);
+
+
+
     }
 }
