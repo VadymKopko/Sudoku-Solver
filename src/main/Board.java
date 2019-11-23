@@ -6,6 +6,7 @@
  */
 package main;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
@@ -19,13 +20,13 @@ public class Board {
     // Initialization of private variables:
 
     private Node root;  // Initialization for a root node
-    private int id = -1;  // -1 when no Nodes have been created
 
     // Class constructor
     public Board()throws IOException {
 
         // Creating a Node Root
-        this.root = new Node(giveID());
+        this.root = new Node(giveBoxID(0,0));
+
         // Pointers:
         Node rowPointer = root;
         Node colPointer;
@@ -35,7 +36,7 @@ public class Board {
             // After the first iteration
             if(row != 0){
                 // Add and Connect Nodes Horizontally:
-                Node newNode = new Node(giveID());  // Create a new Node
+                Node newNode = new Node(giveBoxID(row, 0));  // Create a new Node
                 rowPointer.setSouth(newNode);  // Connect new Node to current for South
                 newNode.setNorth(rowPointer);  // Connect current Node to new for North
 
@@ -49,7 +50,7 @@ public class Board {
             // Create columns in a row
             for(int col = 1; col < SIZE; col++) {
                 // Add and Connect Nodes Horizontally
-                Node newNode = new Node(giveID());  // Create a new Node
+                Node newNode = new Node(giveBoxID(row,col));  // Create a new Node
                 colPointer.setEast(newNode);  // Connect new Node to current for East
                 newNode.setWest(colPointer);  // Connect current Node to new for West
 
@@ -67,7 +68,7 @@ public class Board {
     }
 
     // Method for displaying board grid by printing it to the console.
-    public void display() {
+    public void display(boolean showID) {
 
         // Trackers:
         int rowTracker = 1;
@@ -88,8 +89,11 @@ public class Board {
 
             while (colPointer != null) {
 
-                // For testing unpopulated grid, display ids instead of data inside each Node
-                System.out.print(colPointer.getData());
+                // For testing unpopulated grid, display ids instead of data inside each Node'
+                if(showID)
+                    System.out.print(colPointer.getBoxID());
+                else
+                    System.out.print(colPointer.getData());
 
                 // Display Sudoku Grid every 3 iterations
                 if (colTracker % 3 == 0)
@@ -146,9 +150,15 @@ public class Board {
     }
 
     // Keeps track of Identifications for Nodes. Returns: ID.
-    private int giveID(){
-        this.id++;
-        return this.id;
+    private int giveBoxID(int row, int col){
+
+        // Staring with a zero
+        int boxID = 0;
+
+        boxID += 3 * (row / 3);
+        boxID += (col / 3);
+
+        return boxID;
     }
 
     // Display horizontal line

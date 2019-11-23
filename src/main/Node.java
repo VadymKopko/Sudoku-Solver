@@ -14,14 +14,14 @@ public class Node {
 
     // Initialization of private variables:
 
-    private int id;  // Refers to an according position in a list
+    private int BoxID;  // Refers to an according box(3x3) position in a grid
     private int data;  // A set value
     private Node north, east, south, west;  // Links between Nodes
     private boolean[] possible = new boolean[SIZE];  // An array of possible numbers for the Node
 
     // Class constructor
-    public Node(int id){
-        this.id = id;
+    public Node(int BoxID){
+        this.BoxID = BoxID;
         this.data = 0;
         this.north = null;
         this.east = null;
@@ -34,12 +34,12 @@ public class Node {
 
     // Getters and Setters:
 
-    public int getId() {
-        return id;
+    public int getBoxID() {
+        return BoxID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setBoxID(int BoxID) {
+        this.BoxID = BoxID;
     }
 
     public int getData() {

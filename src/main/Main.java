@@ -32,6 +32,6 @@ public class Main {
         sudoku.populateFromFile(SUDOKU_PATH);
 
         // Display the board before solving
-        sudoku.display();
+        sudoku.display(true);
     }
 }
