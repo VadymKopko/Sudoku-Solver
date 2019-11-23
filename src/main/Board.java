@@ -6,7 +6,9 @@
  */
 package main;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class Board {
 
@@ -65,7 +67,7 @@ public class Board {
     }
 
     // Method for displaying board grid by printing it to the console.
-    public void display(boolean showID) {
+    public void display() {
 
         // Trackers:
         int rowTracker = 1;
@@ -76,11 +78,7 @@ public class Board {
         Node colPointer;
 
         // Display top line
-        if(showID) {
-            System.out.println("----------------------------------");
-        }
-        else
-            System.out.println("-");
+        displayHLine(25);
 
         while (rowPointer != null) {
 
@@ -91,10 +89,7 @@ public class Board {
             while (colPointer != null) {
 
                 // For testing unpopulated grid, display ids instead of data inside each Node
-                if (showID)
-                    System.out.printf("%2d", colPointer.getId());
-                else
-                    System.out.print(colPointer.getData());
+                System.out.print(colPointer.getData());
 
                 // Display Sudoku Grid every 3 iterations
                 if (colTracker % 3 == 0)
@@ -111,10 +106,7 @@ public class Board {
 
             // Display Sudoku Grid every 3 iterations
             if (rowTracker % 3 == 0){
-                if(showID)
-                    System.out.println("----------------------------------");
-                else
-                    System.out.println("-");
+                displayHLine(25);
             }
 
             // Move column pointer East
@@ -123,9 +115,47 @@ public class Board {
         }
     }
 
+    // Method for loading the data for board from a file
+    public void populateFromFile(String filepath) throws IOException {
+
+        // Create file and file scanner
+        File file =  new File(filepath);
+        Scanner input = new Scanner(file);
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null){
+
+            colPointer = rowPointer;
+
+            while(colPointer != null){
+                // Populate with data
+                colPointer.setData(input.nextInt());
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+        }
+
+        // Finish scanning the file
+        input.close();
+    }
+
     // Keeps track of Identifications for Nodes. Returns: ID.
     private int giveID(){
         this.id++;
         return this.id;
+    }
+
+    // Display horizontal line
+    private void displayHLine(int size){
+        for(int x = 0; x < size; x++){
+            System.out.print("-");
+        }
+        System.out.print("\n");
     }
 }
