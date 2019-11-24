@@ -121,7 +121,7 @@ public class Node {
     }
 
     // Runs through all Nodes possibilities,
-    // Returns boolean:
+    // Returns boolean :
     //      true - if it is solved with, aka only one possibility
     //      false - if more than one possibility for solving or already solved
     public boolean solveNode(){
@@ -149,5 +149,6 @@ public class Node {
         // Returns
         return false;
     }
+
 
 }

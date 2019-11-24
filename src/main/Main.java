@@ -40,8 +40,5 @@ public class Main {
 
         // Display the board after solving
         sudoku.display(false);
-
-
-
     }
 }

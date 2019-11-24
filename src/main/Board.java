@@ -523,6 +523,7 @@ public class Board {
                 } else {
                     tempBoard.populateNew(self);
                     return;
+                    // Finishes loop when the solution is found!
                 }
 
             }
