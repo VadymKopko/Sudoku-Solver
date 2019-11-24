@@ -29,7 +29,7 @@ public class Main {
         Board sudoku = new Board();
 
         // Populate the board from a file
-        sudoku.populateFromFile(SUDOKU_PATH);
+        sudoku.populate(SUDOKU_PATH);
 
         // Display the board before solving
         sudoku.display(false);
@@ -38,7 +38,7 @@ public class Main {
         sudoku.solve();
 
         // Display the board after solving
-        sudoku.display(false);
+        // sudoku.display(false);
 
 
 
