@@ -6,22 +6,20 @@
  */
 package main;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class Board {
 
-    // Constants:
-
+    // Initialization of constant variables:
     final int SIZE = 9;  // A maximum possible number in Sudoku.
 
     // Initialization of private variables:
-
     private Node root;  // Initialization for a root node
-    private int iterSolve = 0; // Keeps track of each iteration of solve method
+    private Board self;
 
+    // Public methods:
     // Class constructor
     public Board()throws IOException {
 
@@ -68,7 +66,7 @@ public class Board {
         }
     }
 
-    // Method for displaying board grid by printing it to the console.
+    // Method for displaying board by printing it to the console window
     public void display(boolean showID) {
 
         System.out.println();
@@ -122,8 +120,9 @@ public class Board {
         }
     }
 
-    // Method for loading the data for board from a file
-    public void populateFromFile(String filepath) throws IOException {
+    // Method for populating the data by loading a file(*.txt)
+    // File must contain 9x9 gird of single digit numbers(0-9), with space in between each number
+    public void populate(String filepath) throws IOException {
 
         // Create file and file scanner
         File file =  new File(filepath);
@@ -152,6 +151,100 @@ public class Board {
         input.close();
     }
 
+    // Main method for solving sudoku
+    public void solve() throws IOException{
+
+        // Eliminates all possibilities of number
+        eliminate();
+
+        // Checks if the system is solved
+        if(!isSudokuSolved()){
+            // An attempt to solve sudoku
+            if(isNodeSolved()){
+                // Checks if the System is solved
+                if (!isSudokuSolved())
+                    // In case it is not use recursion of the method
+                    solve();
+            }
+            // If no more cells can be eliminated-solved then start guessing
+            else {
+                // Find the first unsolved node with least number of possibilities
+                Node unsolvedNode = findUnsolvedNode();
+                // Guess one of its possibilities
+                if(unsolvedNode != null)
+                    guess(unsolvedNode);
+            }
+        }
+    }
+
+    // Checks if sudoku is solved already
+    // Returns:
+    //      true - when solved
+    //      false - when still unsolved
+    public boolean isSudokuSolved(){
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null) {
+
+            colPointer = rowPointer;
+
+            while (colPointer != null) {
+
+                // If at least one number is not zero, aka no solved
+                if(colPointer.getData() == 0)
+                    return false;
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+        }
+        return true;
+    }
+
+    // Method to copy data of a specific node
+    public void copy(int rowTrackerSave, int colTrackerSave, int data){
+
+        // Trackers:
+        int rowTracker = 1;
+        int colTracker;
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null){
+
+            colPointer = rowPointer;
+            colTracker = 1;
+
+            while(colPointer != null){
+
+                // In case we found the right slot to copy data into
+                if(rowTracker == rowTrackerSave && colTracker == colTrackerSave){
+                    colPointer.setData(data);
+                    return;
+                }
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+                colTracker++;
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+            rowTracker++;
+        }
+    }
+
+    // Set self
+    public void setSelf(Board self){
+        this.self = self;
+    }
+
+    // Private methods:
     // Method of elimination
     private void eliminate(){
 
@@ -176,19 +269,19 @@ public class Board {
 
                     // Set possibilities o this number to false, aka solved
                     for(int i = 0; i < SIZE; i++)
-                        colPointer.setImposible(i);
+                        colPointer.setImpossible(i);
 
                     // Eliminate possibility of this number horizontally
                     cellPointer = colPointer;
                     // Move East
                     while(cellPointer != null){
-                        cellPointer.setImposible(cell);
+                        cellPointer.setImpossible(cell);
                         cellPointer = cellPointer.getEast();
                     }
                     cellPointer = colPointer;
                     // Move West
                     while(cellPointer != null){
-                        cellPointer.setImposible(cell);
+                        cellPointer.setImpossible(cell);
                         cellPointer = cellPointer.getWest();
                     }
 
@@ -196,13 +289,13 @@ public class Board {
                     cellPointer = colPointer;
                     // Move North
                     while(cellPointer != null){
-                        cellPointer.setImposible(cell);
+                        cellPointer.setImpossible(cell);
                         cellPointer = cellPointer.getNorth();
                     }
                     cellPointer = colPointer;
                     // Move South
                     while(cellPointer != null){
-                        cellPointer.setImposible(cell);
+                        cellPointer.setImpossible(cell);
                         cellPointer = cellPointer.getSouth();
                     }
 
@@ -233,7 +326,7 @@ public class Board {
 
                 // In case where it is the right box, eliminate possibility of num
                 if (colPointer.getBoxID() == boxID)
-                    colPointer.setImposible(num);
+                    colPointer.setImpossible(num);
 
                 // Move column pointer East
                 colPointer = colPointer.getEast();
@@ -244,7 +337,7 @@ public class Board {
         }
     }
 
-    // Keeps track of Identifications for Nodes. Returns: ID.
+    // Keeps track of identifications for nodes. Returns: ID of the 3x3 box
     private int giveBoxID(int row, int col){
 
         // Staring with a zero
@@ -270,7 +363,7 @@ public class Board {
 
         // Trackers:
         int rowTracker = 1;
-        int colTracker = 1;
+        int colTracker;
 
         // Pointers:
         Node rowPointer = root;
@@ -298,37 +391,11 @@ public class Board {
 
     }
 
-    // Checks if sudoku is solved already
-    private boolean isSolved(){
-        // Pointers:
-        Node rowPointer = root;
-        Node colPointer;
-
-        while(rowPointer != null) {
-
-            colPointer = rowPointer;
-
-            while (colPointer != null) {
-
-                // If at least one number is not zero, aka no solved
-                if(colPointer.getData() == 0)
-                    return false;
-
-                // Move column pointer East
-                colPointer = colPointer.getEast();
-            }
-            // Move row pointer South
-            rowPointer = rowPointer.getSouth();
-        }
-        return true;
-
-    }
-
-    // Runs through all Nodes and solves them if possible,
+    // Runs through all nodes and solves them if possible,
     // Returns boolean:
-    //      true - if at least one Node has been solved,
+    //      true - if at least one Node has been solved
     //      false - if couldn't solve any Nodes, aka the sudoku is either solved or needs a guess
-    private boolean solveNodes(){
+    private boolean isNodeSolved(){
 
         // Keeps track if at least one Node has been solved
         boolean solvedAny = false;
@@ -359,26 +426,106 @@ public class Board {
         return solvedAny;
     }
 
-    // Main method for solving sudoku
-    public void solve(){
+    // Method of finds and returns first unsolved node
+    private Node findUnsolvedNode(){
 
-        // Each time this method is used
-        iterSolve++;
+        int numOfPoss = 10;
 
-        // Eliminates all possibilities of number
-        eliminate();
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
 
-        if(!isSolved()){ // Checks if the System is initially solved, aka only if solved sudoku is given
-            if(solveNodes()) { // An attempt to solve sudoku
-                if (!isSolved()) // Checks if the System is solved
-                    solve();  // In case it is not uses recursion
+        // Node to return
+        Node returnNode = null;
+
+        while(rowPointer != null) {
+
+            colPointer = rowPointer;
+
+            while (colPointer != null) {
+
+                // If at least one number is not zero and it is the least number of possibilities
+                if(colPointer.getData() == 0) {
+                    // If number of possibilities is less than current maximum but not zero
+                    if (colPointer.getNumOfPoss() < numOfPoss && colPointer.getNumOfPoss() > 0) {
+                        numOfPoss = colPointer.getNumOfPoss();
+                        returnNode = colPointer;
+                    }
+                }
+                // Move column pointer East
+                colPointer = colPointer.getEast();
             }
-
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
         }
-
-
-
-
+        return returnNode;
     }
 
+    // Method of populating temporary board with existing data from current board
+    private void populateNew(Board tempBoard){
+
+        // Trackers:
+        int rowTracker = 1;
+        int colTracker;
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null){
+
+            colPointer = rowPointer;
+            colTracker = 1;
+
+            while(colPointer != null){
+
+                // Copy existing data
+                tempBoard.copy(rowTracker, colTracker, colPointer.getData());
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+                colTracker++;
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+            rowTracker++;
+        }
+    }
+
+    // Method of guessing
+    private void guess(Node unsolvedNode) throws IOException{
+
+        // Create an array for all possible numbers for current unsolved node
+        boolean[] possibilities = unsolvedNode.getPossible();
+
+        // Iterate through and try each possibility of current unsolved node
+        for(int i = 1; i < 10; i++) {
+
+            // When number is possible for a guess
+            if(possibilities[i]) {
+
+                // Pretend that this is a right number
+                unsolvedNode.setData(i);
+
+                // Create a new board
+                Board tempBoard = new Board();
+                tempBoard.setSelf(tempBoard);
+
+                // Populate with data that already exists for current board, but with the guess
+                populateNew(tempBoard);
+
+                // Attempt to solve temporary board
+                tempBoard.solve();
+
+                // In case the board is not solved set guessed number to impossible
+                if(!tempBoard.isSudokuSolved()) {
+                    unsolvedNode.setImpossible(i);
+                } else {
+                    tempBoard.populateNew(self);
+                    return;
+                }
+
+            }
+        }
+    }
 }

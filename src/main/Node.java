@@ -34,6 +34,20 @@ public class Node {
 
     // Getters and Setters:
 
+    public int getNumOfPoss(){
+
+        int numOfPoss = 0;
+
+        // Checks for each possible number
+        for(int i = 1; i < possible.length; i++) {
+            if (this.possible[i]) {
+                numOfPoss++;
+            }
+        }
+
+        return numOfPoss;
+    }
+
     public int getBoxID() {
         return BoxID;
     }
@@ -83,7 +97,7 @@ public class Node {
     }
 
     // Set a number to impossible
-    public void setImposible(int num){
+    public void setImpossible(int num){
         this.possible[num] = false;
     }
 
@@ -135,4 +149,5 @@ public class Node {
         // Returns
         return false;
     }
+
 }

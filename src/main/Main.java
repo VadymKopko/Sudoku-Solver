@@ -21,15 +21,16 @@ public class Main {
         sudoku_easy.txt only involves elimination algorithm
         sudoku_hard.txt uses both an elimination and recursive guessing algorithms
     */
-    public static String SUDOKU_PATH = "resources/sudoku_easy.txt";
+    public static String SUDOKU_PATH = "resources/sudoku_hard.txt";
 
     public static void main(String[] args) throws IOException{
 
         // Create a Sudoku game board
         Board sudoku = new Board();
+        sudoku.setSelf(sudoku);
 
         // Populate the board from a file
-        sudoku.populateFromFile(SUDOKU_PATH);
+        sudoku.populate(SUDOKU_PATH);
 
         // Display the board before solving
         sudoku.display(false);
