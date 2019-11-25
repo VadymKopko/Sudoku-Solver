@@ -6,8 +6,12 @@ Is written on Java. Method includes linked nodes in a grid with an elimination, 
 
 ##### Initialize a new 9x9 Sudoku Board: 
 > Board *sudoku* = new Board();
+>
+> *sudoku*.setSelf(sudoku);
 
-This creates an empty board with all Nodes set to '0'*
+This creates an empty board with all Nodes set to '0'
+
+Requires to pass the self to the board; The guessing method needs a reference what to populate when the board is solved. 
 
 ##### To populate the Sudoku Board from a file (.txt):
 > *sudoku*.populate(**filepath**);
