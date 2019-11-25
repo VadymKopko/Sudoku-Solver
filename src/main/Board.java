@@ -67,9 +67,11 @@ public class Board {
     }
 
     // Method for displaying board by printing it to the console window
-    public void display(boolean showID) {
+    public void display() {
 
         System.out.println();
+        // DEBUGGING
+        boolean showID = false;
 
         // Trackers:
         int rowTracker = 1;

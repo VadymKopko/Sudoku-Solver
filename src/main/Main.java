@@ -33,12 +33,12 @@ public class Main {
         sudoku.populate(SUDOKU_PATH);
 
         // Display the board before solving
-        sudoku.display(false);
+        sudoku.display();
 
         // Solve sudoku
         sudoku.solve();
 
         // Display the board after solving
-        sudoku.display(false);
+        sudoku.display();
     }
 }
