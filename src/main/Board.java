@@ -22,20 +22,24 @@ public class Board {
     // Public methods:
     // Class constructor
     public Board()throws IOException {
+    	
+    	String id = "0 - 0";
 
         // Creating a Node Root
-        this.root = new Node(giveBoxID(0,0));
+        this.root = new Node(id, giveBoxID(0,0));
 
         // Pointers:
         Node rowPointer = root;
         Node colPointer;
 
         for(int row = 0; row < SIZE; row++){
+        	
+        	id = row+" - "+0;
 
             // After the first iteration
             if(row != 0){
                 // Add and Connect Nodes Horizontally:
-                Node newNode = new Node(giveBoxID(row, 0));  // Create a new Node
+                Node newNode = new Node(id, giveBoxID(row, 0));  // Create a new Node
                 rowPointer.setSouth(newNode);  // Connect new Node to current for South
                 newNode.setNorth(rowPointer);  // Connect current Node to new for North
 
@@ -48,8 +52,11 @@ public class Board {
 
             // Create columns in a row
             for(int col = 1; col < SIZE; col++) {
+            	
+            	id = row+" - "+col;
+            	
                 // Add and Connect Nodes Horizontally
-                Node newNode = new Node(giveBoxID(row,col));  // Create a new Node
+                Node newNode = new Node(id, giveBoxID(row,col));  // Create a new Node
                 colPointer.setEast(newNode);  // Connect new Node to current for East
                 newNode.setWest(colPointer);  // Connect current Node to new for West
 
@@ -155,23 +162,34 @@ public class Board {
 
     // Main method for solving sudoku
     public void solve() throws IOException{
+    	
+    	display();
+    	System.out.print("Solve -> ");
 
         // Eliminates all possibilities of number
+    	System.out.print("Eliminate\n");
         eliminate();
 
         // Checks if the system is solved
+        System.out.println("Is sudoku solved: " + isSudokuSolved());
         if(!isSudokuSolved()){
             // An attempt to solve sudoku
             if(isNodeSolved()){
+            	System.out.println("Is node solved: TRUE");
                 // Checks if the System is solved
-                if (!isSudokuSolved())
+            	System.out.println("Is sudoku solved: " + isSudokuSolved());
+                if (!isSudokuSolved()) {
                     // In case it is not use recursion of the method
                     solve();
+                }
             }
             // If no more cells can be eliminated-solved then start guessing
             else {
+            	System.out.println("Is node solved: FALSE");
                 // Find the first unsolved node with least number of possibilities
+            	System.out.println("Start guessing ->");
                 Node unsolvedNode = findUnsolvedNode();
+                
                 // Guess one of its possibilities
                 if(unsolvedNode != null)
                     guess(unsolvedNode);
@@ -184,6 +202,7 @@ public class Board {
     //      true - when solved
     //      false - when still unsolved
     public boolean isSudokuSolved(){
+    	
         // Pointers:
         Node rowPointer = root;
         Node colPointer;
@@ -249,7 +268,7 @@ public class Board {
     // Private methods:
     // Method of elimination
     private void eliminate(){
-
+    	
         // Pointers:
         Node rowPointer = root;
         Node colPointer;
@@ -347,7 +366,7 @@ public class Board {
 
         boxID += 3 * (row / 3);
         boxID += (col / 3);
-
+        
         return boxID;
     }
 
@@ -397,6 +416,7 @@ public class Board {
     // Returns boolean:
     //      true - if at least one Node has been solved
     //      false - if couldn't solve any Nodes, aka the sudoku is either solved or needs a guess
+    //TODO: This shouldn't return and do something in one method
     private boolean isNodeSolved(){
 
         // Keeps track if at least one Node has been solved
@@ -413,8 +433,15 @@ public class Board {
             while (colPointer != null) {
 
                 // If solved, then at least one has been solved
-                if(colPointer.solveNode())
+            	// TODO: Fix bug with solving before updating possibility
+                if(colPointer.solveNode()) {
+                	
+                	//Display all possible numbers
+                    System.out.print(colPointer.getId() + " | ");
+                    colPointer.displayPossible();
+                    
                     solvedAny = true;
+                }
 
 
                 // Move column pointer East
@@ -496,6 +523,11 @@ public class Board {
 
     // Method of guessing
     private void guess(Node unsolvedNode) throws IOException{
+    	
+    	System.out.print("Guessing...\n");
+        System.out.print(unsolvedNode.getId() + " | ");
+        unsolvedNode.displayPossible();
+        display();
 
         // Create an array for all possible numbers for current unsolved node
         boolean[] possibilities = unsolvedNode.getPossible();

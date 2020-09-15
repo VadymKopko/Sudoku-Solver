@@ -15,13 +15,15 @@ public class Node {
     // Initialization of private variables:
 
     private int BoxID;  // Refers to an according box(3x3) position in a grid
+    private String id;
     private int data;  // A set value
     private Node north, east, south, west;  // Links between Nodes
     private boolean[] possible = new boolean[SIZE+1];  // An array of possible numbers for the Node
 
     // Class constructor
-    public Node(int BoxID){
+    public Node(String id, int BoxID){
         this.BoxID = BoxID;
+        this.id = id;
         this.data = 0;
         this.north = null;
         this.east = null;
@@ -94,6 +96,10 @@ public class Node {
 
     public void setWest(Node west) {
         this.west = west;
+    }
+    
+    public String getId() {
+    	return id;
     }
 
     // Set a number to impossible
