@@ -27,7 +27,6 @@ public class Main {
 
         // Create a Sudoku game board
         Board sudoku = new Board();
-        sudoku.setSelf(sudoku);
 
         // Populate the board from a file
         sudoku.populate(SUDOKU_PATH);

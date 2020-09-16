@@ -18,7 +18,6 @@ public class Board {
 
     // Initialization of private variables:
     private Node root;  // Initialization for a root node
-    private Board self;
 
     // Public methods:
     // Class constructor
@@ -269,11 +268,6 @@ public class Board {
             rowPointer = rowPointer.getSouth();
             rowTracker++;
         }
-    }
-
-    // Set self
-    public void setSelf(Board self){
-        this.self = self;
     }
 
     // Private methods:
@@ -569,7 +563,7 @@ public class Board {
     }
 
     // Method of populating temporary board with existing data from current board
-    private void populateNew(Board tempBoard){
+    private void cloneTo(Board tempBoard){
     	
     	if(DEBUG)
     		System.out.print("Populate New: \n");
@@ -589,6 +583,7 @@ public class Board {
 
             while(colPointer != null){
 
+            	//TODO: Make to copy Nodes easier with simple clone method  	
                 // Copy existing data
                 tempBoard.copy(rowTracker, colTracker, colPointer.getData());
 
@@ -624,13 +619,11 @@ public class Board {
                 // Pretend that this is a right number
                 unsolvedNode.setData(i);
 
-                //TODO: Do not have to pass self to it!
                 // Create a new board
                 Board tempBoard = new Board();
-                tempBoard.setSelf(tempBoard);
 
                 // Populate with data that already exists for current board, but with the guess
-                populateNew(tempBoard);
+                cloneTo(tempBoard);
 
                 // Attempt to solve temporary board
                 tempBoard.solve();
@@ -639,7 +632,7 @@ public class Board {
                 if(!tempBoard.isSudokuSolved()) {
                     unsolvedNode.setImpossible(i);
                 } else {
-                    tempBoard.populateNew(self);
+                    tempBoard.cloneTo(this);
                     return;
                     // Finishes loop when the solution is found!
                 }
