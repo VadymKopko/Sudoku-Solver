@@ -14,6 +14,7 @@ public class Board {
 
     // Initialization of constant variables:
     final int SIZE = 9;  // A maximum possible number in Sudoku.
+    final boolean DEBUG = false;
 
     // Initialization of private variables:
     private Node root;  // Initialization for a root node
@@ -163,21 +164,27 @@ public class Board {
     // Main method for solving sudoku
     public void solve() throws IOException{
     	
-    	display();
-    	System.out.print("Solve -> ");
+    	if(DEBUG) {
+	    	display();
+	    	System.out.print("Solve -> ");
+    	}
 
         // Eliminates all possibilities of number
-    	System.out.print("Eliminate\n");
-        eliminate();
+    	if(DEBUG)
+    		System.out.print("Eliminate\n");
+        eliminatePossibilitiesForAll();
 
         // Checks if the system is solved
-        System.out.println("Is sudoku solved: " + isSudokuSolved());
+        if(DEBUG)
+        	System.out.println("Is sudoku solved: " + isSudokuSolved());
         if(!isSudokuSolved()){
             // An attempt to solve sudoku
             if(isNodeSolved()){
-            	System.out.println("Is node solved: TRUE");
+            	if(DEBUG)
+            		System.out.println("Is node solved: TRUE");
                 // Checks if the System is solved
-            	System.out.println("Is sudoku solved: " + isSudokuSolved());
+            	if(DEBUG)
+            		System.out.println("Is sudoku solved: " + isSudokuSolved());
                 if (!isSudokuSolved()) {
                     // In case it is not use recursion of the method
                     solve();
@@ -185,15 +192,19 @@ public class Board {
             }
             // If no more cells can be eliminated-solved then start guessing
             else {
-            	System.out.println("Is node solved: FALSE");
+            	if(DEBUG)
+            		System.out.println("Is node solved: FALSE");
                 // Find the first unsolved node with least number of possibilities
-            	System.out.println("Start guessing ->");
+            	if(DEBUG)
+            		System.out.println("Start guessing ->");
                 Node unsolvedNode = findUnsolvedNode();
                 
                 // Guess one of its possibilities
                 if(unsolvedNode != null)
                     guess(unsolvedNode);
             }
+            if(DEBUG)
+            	System.out.print("DEAD END ---------------| \n");
         }
     }
 
@@ -267,7 +278,7 @@ public class Board {
 
     // Private methods:
     // Method of elimination
-    private void eliminate(){
+    private void eliminatePossibilitiesForAll(){
     	
         // Pointers:
         Node rowPointer = root;
@@ -329,6 +340,55 @@ public class Board {
             }
             // Move row pointer South
             rowPointer = rowPointer.getSouth();
+        }
+    }
+    
+    // Method of elimination
+    private void eliminatePossibilitiesFor(Node node){
+    	
+        // Receive data for a Node
+        int cell = node.getData();
+
+        // When number is already known delete possibilities
+        if(cell != 0){
+
+            Node cellPointer = node;
+            int boxID = cellPointer.getBoxID();
+
+            // Set possibilities o this number to false, aka solved
+            for(int i = 0; i < SIZE; i++)
+            	node.setImpossible(i);
+
+            // Eliminate possibility of this number horizontally
+            cellPointer = node;
+            // Move East
+            while(cellPointer != null){
+                cellPointer.setImpossible(cell);
+                cellPointer = cellPointer.getEast();
+            }
+            cellPointer = node;
+            // Move West
+            while(cellPointer != null){
+                cellPointer.setImpossible(cell);
+                cellPointer = cellPointer.getWest();
+            }
+
+            // Eliminate possibility of this number vertically
+            cellPointer = node;
+            // Move North
+            while(cellPointer != null){
+                cellPointer.setImpossible(cell);
+                cellPointer = cellPointer.getNorth();
+            }
+            cellPointer = node;
+            // Move South
+            while(cellPointer != null){
+                cellPointer.setImpossible(cell);
+                cellPointer = cellPointer.getSouth();
+            }
+
+            // Eliminate possibilities within the same box
+            eliminateBox(boxID, cell);
         }
     }
 
@@ -398,8 +458,10 @@ public class Board {
             while (colPointer != null) {
 
                 //Display all possible numbers
-                System.out.print("Row: " + rowTracker + " Col: " + colTracker + " | ");
-                colPointer.displayPossible();
+            	if(DEBUG) {
+	                System.out.print("Row: " + rowTracker + " Col: " + colTracker + " | ");
+	                colPointer.displayPossible();
+            	}
 
                 // Move column pointer East
                 colPointer = colPointer.getEast();
@@ -433,12 +495,16 @@ public class Board {
             while (colPointer != null) {
 
                 // If solved, then at least one has been solved
-            	// TODO: Fix bug with solving before updating possibility
                 if(colPointer.solveNode()) {
                 	
+                	//Update possibilities after the
+                	eliminatePossibilitiesFor(colPointer);
+                	
                 	//Display all possible numbers
-                    System.out.print(colPointer.getId() + " | ");
-                    colPointer.displayPossible();
+                	if(DEBUG) {
+                		System.out.print(colPointer.getId() + " | ");
+                		colPointer.displayPossible();
+                	}
                     
                     solvedAny = true;
                 }
@@ -455,10 +521,13 @@ public class Board {
         return solvedAny;
     }
 
-    // Method of finds and returns first unsolved node
+    // Method that finds and returns first unsolved node
     private Node findUnsolvedNode(){
-
-        int numOfPoss = 10;
+    	
+    	if(DEBUG)
+    		System.out.print("Finding Unsolved Node -> (");
+    	
+        int currentMinNumOfPoss = SIZE+1;
 
         // Pointers:
         Node rowPointer = root;
@@ -476,8 +545,8 @@ public class Board {
                 // If at least one number is not zero and it is the least number of possibilities
                 if(colPointer.getData() == 0) {
                     // If number of possibilities is less than current maximum but not zero
-                    if (colPointer.getNumOfPoss() < numOfPoss && colPointer.getNumOfPoss() > 0) {
-                        numOfPoss = colPointer.getNumOfPoss();
+                    if (colPointer.getNumOfPoss() < currentMinNumOfPoss && colPointer.getNumOfPoss() > 0) {
+                        currentMinNumOfPoss = colPointer.getNumOfPoss();
                         returnNode = colPointer;
                     }
                 }
@@ -487,11 +556,23 @@ public class Board {
             // Move row pointer South
             rowPointer = rowPointer.getSouth();
         }
+        
+        //Debugging comment
+        if(DEBUG) {
+	        if(returnNode != null)
+	        	System.out.print(returnNode.getId()+")\n");
+	        else
+	        	System.out.print("NOT FOUND ANY)\n");
+        }
+        
         return returnNode;
     }
 
     // Method of populating temporary board with existing data from current board
     private void populateNew(Board tempBoard){
+    	
+    	if(DEBUG)
+    		System.out.print("Populate New: \n");
 
         // Trackers:
         int rowTracker = 1;
@@ -524,10 +605,12 @@ public class Board {
     // Method of guessing
     private void guess(Node unsolvedNode) throws IOException{
     	
-    	System.out.print("Guessing...\n");
-        System.out.print(unsolvedNode.getId() + " | ");
-        unsolvedNode.displayPossible();
-        display();
+    	if(DEBUG) {
+	    	System.out.print("Guessing...\n");
+	        System.out.print(unsolvedNode.getId() + " | ");
+	        unsolvedNode.displayPossible();
+	        display();
+    	}
 
         // Create an array for all possible numbers for current unsolved node
         boolean[] possibilities = unsolvedNode.getPossible();
@@ -541,6 +624,7 @@ public class Board {
                 // Pretend that this is a right number
                 unsolvedNode.setData(i);
 
+                //TODO: Do not have to pass self to it!
                 // Create a new board
                 Board tempBoard = new Board();
                 tempBoard.setSelf(tempBoard);
