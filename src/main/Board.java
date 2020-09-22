@@ -14,32 +14,32 @@ public class Board {
 
     // Initialization of constant variables:
     final int SIZE = 9;  // A maximum possible number in Sudoku.
-    final boolean DEBUG = false;
+    final boolean DEBUG = false;  // Set true for helpful outputs to into console
 
     // Initialization of private variables:
     private Node root;  // Initialization for a root node
-
-    // Public methods:
-    // Class constructor
+    private boolean atLeastOneNodeSolved = false;
+    
+    /**
+     * Class Constructor
+     * @throws IOException
+     */
     public Board()throws IOException {
     	
-    	String id = "0 - 0";
-
         // Creating a Node Root
-        this.root = new Node(id, giveBoxID(0,0));
+        this.root = new Node(giveNameToNode(0, 0), giveBoxID(0,0));
 
         // Pointers:
         Node rowPointer = root;
         Node colPointer;
 
+        // A process of creation 
         for(int row = 0; row < SIZE; row++){
-        	
-        	id = row+" - "+0;
 
             // After the first iteration
             if(row != 0){
                 // Add and Connect Nodes Horizontally:
-                Node newNode = new Node(id, giveBoxID(row, 0));  // Create a new Node
+                Node newNode = new Node(giveNameToNode(row, 0), giveBoxID(row, 0));  // Create a new Node
                 rowPointer.setSouth(newNode);  // Connect new Node to current for South
                 newNode.setNorth(rowPointer);  // Connect current Node to new for North
 
@@ -53,10 +53,8 @@ public class Board {
             // Create columns in a row
             for(int col = 1; col < SIZE; col++) {
             	
-            	id = row+" - "+col;
-            	
                 // Add and Connect Nodes Horizontally
-                Node newNode = new Node(id, giveBoxID(row,col));  // Create a new Node
+                Node newNode = new Node(giveNameToNode(row, col), giveBoxID(row, col));  // Create a new Node
                 colPointer.setEast(newNode);  // Connect new Node to current for East
                 newNode.setWest(colPointer);  // Connect current Node to new for West
 
@@ -73,7 +71,26 @@ public class Board {
         }
     }
 
-    // Method for displaying board by printing it to the console window
+    /**
+     * Gives each box in a grid an identification by row and col values.
+     * @param row
+     * @param col
+     * @return boxID
+     */
+    private int giveBoxID(int row, int col){
+
+        // Staring with a zero
+        int boxID = 0;
+
+        boxID += 3 * (row / 3);
+        boxID += (col / 3);
+        
+        return boxID;
+    }
+    
+    /**
+     * Displays current grid onto a console
+     */
     public void display() {
 
         System.out.println();
@@ -128,9 +145,60 @@ public class Board {
             rowTracker++;
         }
     }
+    
+    /**
+     * Displays a horizontal bar with a specific size in spaces 
+     * @param size
+     */
+    private void displayHLine(int size){
+        for(int x = 0; x < size; x++){
+            System.out.print("-");
+        }
+        System.out.print("\n");
+    }
 
-    // Method for populating the data by loading a file(*.txt)
-    // File must contain 9x9 gird of single digit numbers(0-9), with space in between each number
+    /**
+     * Debugging tool for displaying a list of all possible numbers for all nodes in a grid onto a console
+     */
+    private void displayPossibilities(){
+
+        // Trackers:
+        int rowTracker = 1;
+        int colTracker;
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while (rowPointer != null) {
+
+            colPointer = rowPointer;
+            colTracker = 1;
+
+            while (colPointer != null) {
+
+                //Display all possible numbers
+            	if(DEBUG) {
+	                System.out.print("Row: " + rowTracker + " Col: " + colTracker + " | ");
+	                colPointer.displayPossible();
+            	}
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+                colTracker++;
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+            rowTracker++;
+        }
+
+    }
+
+    /**
+     * Populates the data into the grid by reading from an existing file(*.txt)
+     * @param filepath, file must contain 9x9 gird of single digit numbers(0-9), with space in between each number.
+     * @throws IOException
+     */
     public void populate(String filepath) throws IOException {
 
         // Create file and file scanner
@@ -156,12 +224,17 @@ public class Board {
             rowPointer = rowPointer.getSouth();
         }
 
-        // Finish scanning the file
         input.close();
     }
 
-    // Main method for solving sudoku
+    /**
+     * Tries to solve current grid, if sudoku has a dead end terminates.
+     * @throws IOException
+     */
     public void solve() throws IOException{
+    	
+    	// Assumes that not a single node has been solved up to this point
+    	atLeastOneNodeSolved = false;
     	
     	if(DEBUG) {
 	    	display();
@@ -177,8 +250,9 @@ public class Board {
         if(DEBUG)
         	System.out.println("Is sudoku solved: " + isSudokuSolved());
         if(!isSudokuSolved()){
-            // An attempt to solve sudoku
-            if(isNodeSolved()){
+            // An attempt to solve nodes
+        	solveNodes();
+            if(atLeastOneNodeSolved){
             	if(DEBUG)
             		System.out.println("Is node solved: TRUE");
                 // Checks if the System is solved
@@ -207,10 +281,11 @@ public class Board {
         }
     }
 
-    // Checks if sudoku is solved already
-    // Returns:
-    //      true - when solved
-    //      false - when still unsolved
+    /**
+     * Checks for grid to be solved
+     * @return true, when grid is solved
+     * @return false, when in process
+     */
     public boolean isSudokuSolved(){
     	
         // Pointers:
@@ -236,42 +311,9 @@ public class Board {
         return true;
     }
 
-    // Method to copy data of a specific node
-    public void copy(int rowTrackerSave, int colTrackerSave, int data){
-
-        // Trackers:
-        int rowTracker = 1;
-        int colTracker;
-
-        // Pointers:
-        Node rowPointer = root;
-        Node colPointer;
-
-        while(rowPointer != null){
-
-            colPointer = rowPointer;
-            colTracker = 1;
-
-            while(colPointer != null){
-
-                // In case we found the right slot to copy data into
-                if(rowTracker == rowTrackerSave && colTracker == colTrackerSave){
-                    colPointer.setData(data);
-                    return;
-                }
-
-                // Move column pointer East
-                colPointer = colPointer.getEast();
-                colTracker++;
-            }
-            // Move row pointer South
-            rowPointer = rowPointer.getSouth();
-            rowTracker++;
-        }
-    }
-
-    // Private methods:
-    // Method of elimination
+    /**
+     * Eliminates possibilities for numbers in ALL Nodes
+     */
     private void eliminatePossibilitiesForAll(){
     	
         // Pointers:
@@ -326,7 +368,7 @@ public class Board {
                     }
 
                     // Eliminate possibilities within the same box
-                    eliminateBox(boxID, cell);
+                    eliminatePossibilitesInBox(boxID, cell);
                 }
 
                 // Move column pointer East
@@ -337,7 +379,10 @@ public class Board {
         }
     }
     
-    // Method of elimination
+    /**
+     * Eliminates possibilities for numbers in a Node
+     * @param node
+     */
     private void eliminatePossibilitiesFor(Node node){
     	
         // Receive data for a Node
@@ -382,12 +427,16 @@ public class Board {
             }
 
             // Eliminate possibilities within the same box
-            eliminateBox(boxID, cell);
+            eliminatePossibilitesInBox(boxID, cell);
         }
     }
 
-    // Eliminate possibilities within a box
-    private void eliminateBox(int boxID, int num) {
+    /**
+     * Eliminates possibilities for numbers in one of boxes in a grid
+     * @param boxID, which box
+     * @param num, which number
+     */
+    private void eliminatePossibilitesInBox(int boxID, int num) {
 
         // Pointers:
         Node rowPointer = root;
@@ -412,71 +461,11 @@ public class Board {
         }
     }
 
-    // Keeps track of identifications for nodes. Returns: ID of the 3x3 box
-    private int giveBoxID(int row, int col){
-
-        // Staring with a zero
-        int boxID = 0;
-
-        boxID += 3 * (row / 3);
-        boxID += (col / 3);
-        
-        return boxID;
-    }
-
-    // Display horizontal line
-    private void displayHLine(int size){
-        for(int x = 0; x < size; x++){
-            System.out.print("-");
-        }
-        System.out.print("\n");
-    }
-
-    // Display each node possibilities
-    private void displayPossibilities(){
-
-
-        // Trackers:
-        int rowTracker = 1;
-        int colTracker;
-
-        // Pointers:
-        Node rowPointer = root;
-        Node colPointer;
-
-        while (rowPointer != null) {
-
-            colPointer = rowPointer;
-            colTracker = 1;
-
-            while (colPointer != null) {
-
-                //Display all possible numbers
-            	if(DEBUG) {
-	                System.out.print("Row: " + rowTracker + " Col: " + colTracker + " | ");
-	                colPointer.displayPossible();
-            	}
-
-                // Move column pointer East
-                colPointer = colPointer.getEast();
-                colTracker++;
-            }
-            // Move row pointer South
-            rowPointer = rowPointer.getSouth();
-            rowTracker++;
-        }
-
-    }
-
-    // Runs through all nodes and solves them if possible,
-    // Returns boolean:
-    //      true - if at least one Node has been solved
-    //      false - if couldn't solve any Nodes, aka the sudoku is either solved or needs a guess
-    //TODO: This shouldn't return and do something in one method
-    private boolean isNodeSolved(){
-
-        // Keeps track if at least one Node has been solved
-        boolean solvedAny = false;
+    /**
+     * Runs through all nodes in a grid add tries to solve them.
+     * Changes instance variable atLeastOneNodeSolved to true whenever at least one node has been solved.
+     */
+    private void solveNodes(){
 
         // Pointers:
         Node rowPointer = root;
@@ -494,13 +483,7 @@ public class Board {
                 	//Update possibilities after the
                 	eliminatePossibilitiesFor(colPointer);
                 	
-                	//Display all possible numbers
-                	if(DEBUG) {
-                		System.out.print(colPointer.getId() + " | ");
-                		colPointer.displayPossible();
-                	}
-                    
-                    solvedAny = true;
+                    atLeastOneNodeSolved = true;
                 }
 
 
@@ -510,12 +493,12 @@ public class Board {
             // Move row pointer South
             rowPointer = rowPointer.getSouth();
         }
-
-        // Returns
-        return solvedAny;
     }
-
-    // Method that finds and returns first unsolved node
+   
+    /**
+     * Attempts to find an unsolved node
+     * @return unsolvedNode, returns null when found none
+     */
     private Node findUnsolvedNode(){
     	
     	if(DEBUG)
@@ -554,55 +537,34 @@ public class Board {
         //Debugging comment
         if(DEBUG) {
 	        if(returnNode != null)
-	        	System.out.print(returnNode.getId()+")\n");
+	        	System.out.print(returnNode.getName()+")\n");
 	        else
 	        	System.out.print("NOT FOUND ANY)\n");
         }
         
         return returnNode;
     }
-
-    // Method of populating temporary board with existing data from current board
-    private void cloneTo(Board tempBoard){
-    	
-    	if(DEBUG)
-    		System.out.print("Populate New: \n");
-
-        // Trackers:
-        int rowTracker = 1;
-        int colTracker;
-
-        // Pointers:
-        Node rowPointer = root;
-        Node colPointer;
-
-        while(rowPointer != null){
-
-            colPointer = rowPointer;
-            colTracker = 1;
-
-            while(colPointer != null){
-
-            	//TODO: Make to copy Nodes easier with simple clone method  	
-                // Copy existing data
-                tempBoard.copy(rowTracker, colTracker, colPointer.getData());
-
-                // Move column pointer East
-                colPointer = colPointer.getEast();
-                colTracker++;
-            }
-            // Move row pointer South
-            rowPointer = rowPointer.getSouth();
-            rowTracker++;
-        }
+    
+    /**
+     * Creates a new for a node based on its row and col values.
+     * @param row
+     * @param col
+     * @return String name;
+     */
+    private String giveNameToNode(int row, int col) {
+    	return "(" + row + " | " + col +")";
     }
 
-    // Method of guessing
+    /**
+     * Guesses a specific node as many times as node has possibilities.
+     * @param unsolvedNode
+     * @throws IOException
+     */
     private void guess(Node unsolvedNode) throws IOException{
     	
     	if(DEBUG) {
 	    	System.out.print("Guessing...\n");
-	        System.out.print(unsolvedNode.getId() + " | ");
+	        System.out.print(unsolvedNode.getName() + " | ");
 	        unsolvedNode.displayPossible();
 	        display();
     	}
@@ -623,7 +585,7 @@ public class Board {
                 Board tempBoard = new Board();
 
                 // Populate with data that already exists for current board, but with the guess
-                cloneTo(tempBoard);
+                copyGridDataTo(tempBoard);
 
                 // Attempt to solve temporary board
                 tempBoard.solve();
@@ -632,7 +594,7 @@ public class Board {
                 if(!tempBoard.isSudokuSolved()) {
                     unsolvedNode.setImpossible(i);
                 } else {
-                    tempBoard.cloneTo(this);
+                    tempBoard.copyGridDataTo(this);
                     return;
                     // Finishes loop when the solution is found!
                 }
@@ -640,4 +602,79 @@ public class Board {
             }
         }
     }
+    
+    /**
+     * Copies all data from this grid to a provided grid.
+     * @param tempBoard
+     */
+    public void copyGridDataTo(Board tempBoard){
+    	
+        // Trackers:
+        int rowTracker = 1;
+        int colTracker;
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null){
+
+            colPointer = rowPointer;
+            colTracker = 1;
+
+            while(colPointer != null){
+
+                // Copy existing data
+                tempBoard.copyNodeDataFrom(rowTracker, colTracker, colPointer.getData());
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+                colTracker++;
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+            rowTracker++;
+        }
+    }
+    
+    /**
+     * Copies a particular node data to another node
+     * @param row
+     * @param col
+     * @param data
+     * TODO: Redesign a method for coping nodes while creating a new grid. This method takes way too much time.
+     */
+    public void copyNodeDataFrom(int row, int col, int data){
+
+        // Trackers:
+        int rowTracker = 1;
+        int colTracker;
+
+        // Pointers:
+        Node rowPointer = root;
+        Node colPointer;
+
+        while(rowPointer != null){
+
+            colPointer = rowPointer;
+            colTracker = 1;
+
+            while(colPointer != null){
+
+                // In case we found the right slot to copy data into
+                if(rowTracker == row && colTracker == col){
+                    colPointer.setData(data);
+                    return;
+                }
+
+                // Move column pointer East
+                colPointer = colPointer.getEast();
+                colTracker++;
+            }
+            // Move row pointer South
+            rowPointer = rowPointer.getSouth();
+            rowTracker++;
+        }
+    }
+
 }

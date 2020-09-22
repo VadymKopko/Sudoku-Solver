@@ -13,16 +13,20 @@ import java.io.IOException;
 
 public class Main {
 
-    // Constants:
-
     final int SIZE = 9;  // A maximum possible number in Sudoku.
 
     /* File Path:
         sudoku_easy.txt only involves elimination algorithm
         sudoku_hard.txt uses both an elimination and recursive guessing algorithms
+        sudoku_the_hardest.txt technically the hardest sudoku ever made
     */
     public static String SUDOKU_PATH = "resources/sudoku_hard.txt";
 
+    /**
+     * Main
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException{
 
         // Create a Sudoku game board

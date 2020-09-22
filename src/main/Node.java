@@ -6,36 +6,33 @@
  */
 package main;
 
-public class Node {
+public class Node{
 
     // Constants:
-
     final int SIZE = 9;  // A maximum possible number in Sudoku.
 
     // Initialization of private variables:
-
     private int BoxID;  // Refers to an according box(3x3) position in a grid
-    private String id;
+    private String name;  // Refers to 
     private int data;  // A set value
     private Node north, east, south, west;  // Links between Nodes
     private boolean[] possible = new boolean[SIZE+1];  // An array of possible numbers for the Node
 
     // Class constructor
-    public Node(String id, int BoxID){
+    public Node(String name, int BoxID){
         this.BoxID = BoxID;
-        this.id = id;
+        this.name = name;
         this.data = 0;
         this.north = null;
         this.east = null;
         this.south = null;
         this.west = null;
+        
         // Initially all numbers are a possibility, excluding 0
-        possible[0] = false;
         for(int i = 1; i <= SIZE; i++) {possible[i] = true;}
     }
 
     // Getters and Setters:
-
     public int getNumOfPoss(){
 
         int numOfPoss = 0;
@@ -98,8 +95,8 @@ public class Node {
         this.west = west;
     }
     
-    public String getId() {
-    	return id;
+    public String getName() {
+    	return name;
     }
 
     // Set a number to impossible
